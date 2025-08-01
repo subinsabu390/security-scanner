@@ -1,0 +1,106 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: popeye-cronjob
+spec:
+  schedule: "0 7 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: security-scanner
+          containers:
+          - name: popeye
+            image: acr.azurecr.io/security-scanner:$(Build.BuildId)
+            command: ["/bin/bash", "-c", "/app/popeye-script.sh"]
+            env:
+            - name: STORAGE_ACCOUNT
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-secret
+                  key: STORAGE_ACCOUNT
+            - name: AZURE_STORAGE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-secret
+                  key: AZURE_STORAGE_KEY
+            - name: CONTAINER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-secret
+                  key: CONTAINER_NAME
+          restartPolicy: OnFailure
+          imagePullSecrets:
+          - name: dockerauth
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kubescape-cronjob
+spec:
+  schedule: "0 7 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: security-scanner
+          containers:
+          - name: kubescape
+            image: acr.azurecr.io/security-scanner:$(Build.BuildId)
+            command: ["/bin/bash", "-c", "/app/kubescape.sh"]
+            env:
+            - name: STORAGE_ACCOUNT
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-secret
+                  key: STORAGE_ACCOUNT
+            - name: AZURE_STORAGE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-secret
+                  key: AZURE_STORAGE_KEY
+            - name: CONTAINER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-secret
+                  key: CONTAINER_NAME
+          restartPolicy: OnFailure
+          imagePullSecrets:
+          - name: dockerauth
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: trivy-cronjob
+spec:
+  schedule: "0 7 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: security-scanner
+          containers:
+          - name: trivy
+            image: acr.azurecr.io/security-scanner:$(Build.BuildId)
+            command: ["/bin/bash", "-c", "/app/trivy.sh"]
+            env:
+            - name: STORAGE_ACCOUNT
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-secret
+                  key: STORAGE_ACCOUNT
+            - name: AZURE_STORAGE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-secret
+                  key: AZURE_STORAGE_KEY
+            - name: CONTAINER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: azure-storage-secret
+                  key: CONTAINER_NAME
+          restartPolicy: OnFailure
+          imagePullSecrets:
+          - name: dockerauth
